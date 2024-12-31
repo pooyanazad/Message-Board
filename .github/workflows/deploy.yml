@@ -1,0 +1,44 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run tests
+      run: |
+        python test_app.py
+
+    - name: Build and push Docker image
+      env:
+        CR_PAT: ${{ secrets.CR_PAT }}
+      run: |
+        echo $CR_PAT | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+        docker build -t ghcr.io/${{ github.repository_owner }}/message-board:latest .
+        docker push ghcr.io/${{ github.repository_owner }}/message-board:latest
+
+    - name: Sync Argo CD Application
+      uses: Intility/argocd-deploy@v1.1.9
+      with:
+        argocd_host: 'https://172.232.146.211:30080'  # Replace with your Argo CD server address
+        argocd_username: 'admin'
+        argocd_password: ${{ secrets.ARGOCD_PASSWORD }}
+        argocd_insecure: true
+        application: 'message-board'
