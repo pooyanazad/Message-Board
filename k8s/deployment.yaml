@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: message-board
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: message-board
+  template:
+    metadata:
+      labels:
+        app: message-board
+    spec:
+      containers:
+      - name: message-board
+        image: ghcr.io/pooyanazad/message-board:latest
+        ports:
+        - containerPort: 443
