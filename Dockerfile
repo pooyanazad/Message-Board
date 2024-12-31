@@ -1,18 +1,12 @@
-# Set the base image
-FROM python:3.10
+FROM python:3.9-slim
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the application files
-COPY . /app
-
-
-# Install the required Python packages
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Expose the port
+COPY . .
+
 EXPOSE 443
 
-# Set the command to run the application
 CMD ["python", "app.py"]
